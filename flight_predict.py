@@ -1,9 +1,7 @@
-
 # UI
 import tkinter as tk
 from tkinter import  Frame, Spinbox, ttk
 from tkcalendar import DateEntry
-from tktimepicker import AnalogPicker, AnalogThemes
 root = tk.Tk()
 root.title("Predict")
 root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
@@ -19,8 +17,9 @@ root.rowconfigure(3, weight=1)
 root.rowconfigure(4, weight=1)
 root.rowconfigure(5, weight=1)
 root.rowconfigure(6, weight=1)
+root.rowconfigure(7, weight=1)
+
 inp = []
-# info.append(tk.Entry().grid(row=0,column=0))
 label = tk.Label(text='Airline',font=26).grid(row=1,column=0,sticky=tk.EW,padx=10)
 inpAir = tk.StringVar()
 Airlinechoosen = ttk.Combobox( width = 27, textvariable = inpAir,state='readonly')
@@ -33,12 +32,10 @@ Airlinechoosen['values'] = ('IndiGo',
                         'Vistara', )
 
 Airlinechoosen.grid(column = 1, row = 1)
-Airlinechoosen.current(0) 
 
 
 
 label = tk.Label(text='Dep_Time',font=26).grid(row=1,column=2,sticky=tk.EW,padx=10)
-# inptime = tk.StringVar()
 timeframe = Frame(root)
 inphour = tk.StringVar()
 inpmin = tk.StringVar()
@@ -46,7 +43,6 @@ hr_inp = Spinbox(timeframe,from_=0,to=23,textvariable=inphour).grid(row=0,column
 min_inp = Spinbox(timeframe,from_=0,to=59,textvariable=inpmin).grid(row=0,column=1)
 inptime = inphour.get()+":"+inpmin.get()
 timeframe.grid(row=1,column=3)
-# text = tk.Entry().grid(row=0,column=3,sticky=tk.EW)
 
 label = tk.Label(text='Date_of_Journey',font=26).grid(row=2,column=0,sticky=tk.EW,padx=10)
 inpDate = tk.StringVar()
@@ -65,7 +61,6 @@ m_inp = tk.Entry(DurationFrame,textvariable=inp_m).grid(row=0,column=2)
 m_text = tk.Label(DurationFrame,text="m",font=26).grid(row=0,column=3)
 DurationFrame.grid(row=2,column=3)
 inpDura = inp_h.get()+"h"+inp_m.get()+"m"
-# text = tk.Entry().grid(row=2,column=3,sticky=tk.EW)
 
 label = tk.Label(text='Source',font=26).grid(row=3,column=0,sticky=tk.EW,padx=10)
 inpSource = tk.StringVar()
@@ -77,7 +72,6 @@ Sourcechoosen['values'] = ('Banglore',
                         'Mumbai',)
 
 Sourcechoosen.grid(row=3,column=1,sticky=tk.EW)
-Sourcechoosen.current(0) 
 
 
 label = tk.Label(text='Total_Stops',font=26).grid(row=3,column=2,sticky=tk.EW,padx=10)
@@ -90,8 +84,6 @@ Stopchoosen['values'] = ('non-stop',
                         '4 stops',)
 
 Stopchoosen.grid(row=3,column=3,sticky=tk.EW)
-Stopchoosen.current(0) 
-# text = tk.Entry().grid(row=2,column=3,sticky=tk.EW)
 
 label = tk.Label(text='Destination',font=26).grid(row=4,column=0,sticky=tk.EW,padx=10)
 inpDes = tk.StringVar()
@@ -103,7 +95,6 @@ Deschoosen['values'] = ('New Delhi',
                         'Kolkata',
                         'Hyderabad')
 Deschoosen.grid(row=4,column=1,sticky=tk.EW)
-Deschoosen.current(0) 
 
 
 label = tk.Label(text='Additional_Info',font=26).grid(row=4,column=2,sticky=tk.EW,padx=10)
@@ -117,8 +108,6 @@ Infochoosen['values'] = ('No info',
                         '2 Long layover',
                         '1 Long layover')
 Infochoosen.grid(row=4,column=3,sticky=tk.EW)
-Infochoosen.current(0) 
-# text = tk.Entry().grid(row=3,column=3,sticky=tk.EW)
 
 def saveinput():
     
@@ -130,56 +119,34 @@ def saveinput():
     inp.append(inp_h.get()+"h"+inp_m.get()+"m")
     inp.append(inpStop.get())
     inp.append(inpInfo.get())
-    for i in inp:
-        print(i)
-    import numpy as np
     import pandas as pd
-    import os
     import seaborn as sns
-    import matplotlib.pyplot as plt
     from sklearn.preprocessing import LabelEncoder
     from sklearn.model_selection import train_test_split
     from sklearn.ensemble import RandomForestRegressor
-    from sklearn import metrics
-    from sklearn.linear_model import LinearRegression
-    from sklearn.svm import SVR
-    from sklearn.tree import DecisionTreeRegressor
-    from sklearn.metrics import r2_score,make_scorer
-    from sklearn.model_selection import cross_val_score
-    # from IPython.core.interactiveshell import InteractiveShell
-    # InteractiveShell.ast_node_interactivity = "all"
     sns.set_style("whitegrid")
 
     flights=pd.read_excel('./Data_Train.xlsx')
-    # print(flights.head())
-
-    # flights.info()
 
     flights.dropna(inplace=True)
-    # flights.info()
 
     flights['Date_of_Journey']=pd.to_datetime(flights['Date_of_Journey'],dayfirst=True)
     flights['Dep_Time']=pd.to_datetime(flights['Dep_Time'],format='%H:%M').dt.time
     flights['Additional_Info']=flights['Additional_Info'].str.replace('No info','No Info')
     flights['Duration']=flights['Duration'].str.replace('h','*60').str.replace(' ','+').str.replace('m','*1').apply(eval)
     flights['Duration']=pd.to_numeric(flights['Duration'])
-    flights['weekday']=flights[['Date_of_Journey']].apply(lambda x:x.dt.day_name()) #bug
-    flights["month"] = flights['Date_of_Journey'].map(lambda x: x.month_name()) #bug
+    flights['weekday']=flights[['Date_of_Journey']].apply(lambda x:x.dt.day_name()) 
+    flights["month"] = flights['Date_of_Journey'].map(lambda x: x.month_name()) 
     flights['Dep_Time']=flights['Dep_Time'].apply(lambda x:x.hour)
     flights['Dep_Time']=pd.to_numeric(flights['Dep_Time'])
 
-    # print(flights['Date_of_Journey'])
 
     flights.drop(['Route','Arrival_Time','Date_of_Journey'],axis=1,inplace=True)
-    # print(flights.head())
 
     var_mod = ['Airline','Source','Destination','Additional_Info','Total_Stops','weekday','month','Dep_Time']
     le = LabelEncoder()
     for i in var_mod:
         flights[i] = le.fit_transform(flights[i])
-    # print(flights.corr())
-    # sns.heatmap(flights.corr(),cmap='coolwarm',annot=True)
-    # plt.show()
 
     # outlier
     def outlier(df):
@@ -199,17 +166,7 @@ def saveinput():
 
     rfr=RandomForestRegressor(n_estimators=500) #random data 500 item
     rfr.fit(x_train,y_train)
-    features=x.columns
-    importances = rfr.feature_importances_
-    indices = np.argsort(importances)
-    # plt.figure(1)
-    # plt.title('Feature Importances')
-    # plt.barh(range(len(indices)), importances[indices], color='b', align='center')
-    # plt.yticks(range(len(indices)), features[indices])
-    # plt.xlabel('Relative Importance')
-    # plt.show()
 
-    predictions=rfr.predict(x_test)
     import xlsxwriter
     workbook = xlsxwriter.Workbook('input.xlsx')
     worksheet = workbook.add_worksheet()
@@ -245,14 +202,17 @@ def saveinput():
     for i in var_mod:
         user_input[i]=le.fit_transform(user_input[i])
     test_price_predictions=rfr.predict(user_input)
-    # print(rfr.predict(user_input))
     price = Frame(root)
     label = tk.Label(price,text="Price : ",font=26).grid(row=0,column=0)
     label = tk.Label(price,text=test_price_predictions[0],font=26).grid(row=0,column=1)
-    price.grid(row=6,column=3)
+    price.grid(row=5,column=0,columnspan=5)
     inp.clear()
 
-btn = tk.Button(text="Save",width=10,command=saveinput).grid(row=5,column=0,columnspan=5,pady=120)
+price = Frame(root)
+label = tk.Label(price,text="Price : ",font=26).grid(row=0,column=0)
+label = tk.Label(price,text="",font=26).grid(row=0,column=1)
+price.grid(row=5,column=0,columnspan=5)
+btn = tk.Button(text="Save",width=10,command=saveinput).grid(row=6,column=0,columnspan=5)
 
 
 
